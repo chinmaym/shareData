@@ -23,7 +23,7 @@ function getUserDataFromDB(data,callback){
       console.log(result);
       userData["username"] = result["username"];
       userData["friends"] = result["friends"];
-      dbConnection.collection("files").find({"file_id":{$in:result["files"]}}).toArray(function(err,result1){
+      dbConnection.collection("files").find({"file_id":{$in:result["files"]}}).toArray((err,result1)=>{
         if (err) throw err;
         console.log(result1);
         userData["files"] = result1;
@@ -53,7 +53,35 @@ function getFileData(data,callback){
 function getUserChats(data,callback){
   mongoClient.connect(url,(err,db)=>{
     chatData = {};
-  })
+    mongoConnection = db;
+    console.log(data);
+    dbConnection = mongoConnection.db("sharedrive");
+    dbConnection.collection("conversations").findOne({"participants":{$all:[data["user1"],data["user2"]]}},(err,result)=>{
+      console.log(result);
+      chatData["messages"] = result["messages"];
+      callback(err,chatData);
+      mongoConnection.close();
+    });
+  });
+}
+
+function insertChat(data,callback){
+  mongoClient.connect(url,(err,db)=>{
+    chatData = {};
+    mongoConnection = db;
+    console.log(data);
+    dbConnection = mongoConnection.db("sharedrive");
+    dbConnection.collection("conversations").findOne({"participants":{$all:[data["user1"],data["user2"]]}},(err,result)=>{
+      console.log(result);
+      var messageList = result["messages"];
+      messageList.push({"timestamp":new Date(),"author":data["user1"],"data":data["message"],"type":"text"});
+      dbConnection.collection("conversations").update({"participants":{$all:[data["user1"],data["user2"]]}},{$set:{messages:messageList}},
+    (err,result)=>{
+      callback(err,result);
+      mongoConnection.close();
+    });
+    });
+  });
 }
 
 
@@ -106,8 +134,25 @@ app.get("/chat",(req,res)=>{
   var user1 = req.query.user1;
   var user2 = req.query.user2;
   console.log("user1 = " + user1 +"\n user2 = " +user2);
+  getUserChats({"user1":user1,"user2":user2},(err,result)=>{
+    console.log(result);
+    res.render('chats',{"messages":result["messages"],"user1":user1,"user2":user2});
+  });
+});
 
-})
+app.post("/chat_send",(req,res)=>{
+  var user1 = req.query.user1;
+  var user2 = req.query.user2;
+  var chatMessage = req.body.chatMessage;
+  console.log(user1);
+  console.log(user2);
+  console.log(chatMessage);
+  insertChat({"user1":user1,"user2":user2,"message":chatMessage},(err,result)=>{
+    if (err) throw err;
+    console.log(result);
+    res.redirect("/chat?user1="+user1+"&user2="+user2);
+  });
+});
 
 app.get('/logout',(req,res)=>{
   console.log("logging out");

@@ -1,0 +1,14 @@
+html
+  head
+  body
+    h1= Chat
+    p #{user1}
+    p #{user2}
+    div.chatBox
+      each message in messages
+        p #{message["data"]}
+      else
+        p No messages
+      form(action="/chat_send?user1="+user1+"&user2="+user2, method="POST")
+        input(type="text", name="chatMessage", placeholder="Enter Message")
+        input(type="submit", value="Submit")
