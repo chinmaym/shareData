@@ -4,15 +4,25 @@ html
   body
     h1= message
     div.userControls
-      
+      p
+        form(action="/upload?user="+user, method="POST")
+          input(type="file", name="fileName")
+          input(type="submit", value="upload")
     div.container
       h3= "Files"
       each val in files
-        a(href='/view/?file='+val["file_id"]) #{val["file_name"]}
+        div
+          form(action="/sendFile?user="+user+"&file="+val["file_id"], method="POST")
+            a(href='/view/?file='+val["file_id"]) #{val["file_name"]}
+            input(type="submit", value="send")
+            
       else
         p No values
       h3= "Friends"
+      form(action="/addFriends?user="+user, method="POST")
+        input(type="submit",value="Add Friends")
       each friend in friends
-        a(href="/chat/?user1="+user+"&"+"user2="+friend) #{friend}
+        div
+          a(href="/chat/?user1="+user+"&"+"user2="+friend) #{friend}
       else
         p No friends

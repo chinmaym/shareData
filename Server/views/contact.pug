@@ -1,0 +1,6 @@
+html
+  head
+  body
+    each contact in contacts
+      div
+        a(href='/addFriendToUser/?user1='+user+"&user2="+contact) #{contact}

@@ -1,0 +1,15 @@
+html
+  head
+  body
+    h1= SignUp
+    div.signUpPage
+      form(action="/signUp",method="POST")
+        p Username:
+        input(type="text", name="username", value=username)
+        if invalid
+          p(style={color:'red'}) Passwords do not match
+        p Password:
+        input(type="password", name="password")
+        p confirm Password:
+        input(type="password", name="confirm_password")
+        input(type="submit", value = "SignUp" )
